@@ -27,6 +27,8 @@
       background: #050816;
       color: #e5e7eb;
     }
+
+    /* ---------- Loader Layout ---------- */
     .loader-wrapper {
       position: fixed;
       inset: 0;
@@ -36,6 +38,7 @@
       background: #050816;
       z-index: 9999;
     }
+
     .loader-card {
       max-width: 420px;
       width: 100%;
@@ -44,35 +47,47 @@
       background: radial-gradient(circle at top, #1e293b, #020617);
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
       text-align: center;
+      animation: fadeIn 0.5s ease-out;
     }
-    .loader-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 999px;
-      display: inline-flex;
+
+    /* ---------- Logo ---------- */
+    .loader-logo {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 18px auto;
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(34, 197, 94, 0.08);
-      border: 1px solid rgba(34, 197, 94, 0.4);
-      margin-bottom: 18px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    .loader-icon::before {
-      content: "🛡️";
-      font-size: 26px;
+
+    .loader-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
+
+    /* ---------- Text ---------- */
     .loader-title {
       font-size: 24px;
       font-weight: 700;
       margin-bottom: 6px;
     }
+
     .loader-subtitle {
       font-size: 14px;
       color: #9ca3af;
     }
+
+    /* ---------- Progress ---------- */
     .progress-shell {
       margin-top: 24px;
       width: 100%;
     }
+
     .progress-bg {
       width: 100%;
       height: 10px;
@@ -80,6 +95,7 @@
       background: rgba(45, 212, 191, 0.16);
       overflow: hidden;
     }
+
     .progress-bar {
       height: 100%;
       width: 0%;
@@ -87,11 +103,14 @@
       background: linear-gradient(90deg, #14b8a6, #22c55e);
       transition: width 0.35s ease-out;
     }
+
     .progress-text {
       margin-top: 8px;
       font-size: 13px;
       color: #cbd5f5;
     }
+
+    /* ---------- Secure Small Text ---------- */
     .loader-secure {
       margin-top: 18px;
       font-size: 11px;
@@ -101,6 +120,7 @@
       justify-content: center;
       gap: 6px;
     }
+
     .loader-secure-dot {
       width: 6px;
       height: 6px;
@@ -109,18 +129,32 @@
       box-shadow: 0 0 8px #22c55e;
     }
 
+    /* Hide loader smoothly */
     .hidden {
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.25s ease-out;
     }
+
+    /* fade in animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
+
 <body>
-  <!-- Initial loading screen -->
+
+  <!-- Initial Loading Screen -->
   <div id="initial-loader" class="loader-wrapper">
     <div class="loader-card">
-      <div class="loader-icon"></div>
+
+      <!-- Your Logo -->
+      <div class="loader-logo">
+        <img src="icons/Icon-192.png" alt="Logo">
+      </div>
+
       <div class="loader-title">Preparing Your Secure Session</div>
       <div class="loader-subtitle">
         Thank you for your patience. We're getting things ready for you.
@@ -142,11 +176,11 @@
     </div>
   </div>
 
-  <!-- Flutter bootstrap (loads your WASM app) -->
+  <!-- Flutter Web Boot -->
   <script src="flutter_bootstrap.js" async></script>
 
+  <!-- Progress Simulation Logic -->
   <script>
-    // Fake progress while Flutter/WASM is loading
     (function () {
       const bar = document.getElementById("progress-bar");
       const text = document.getElementById("progress-text");
@@ -157,25 +191,26 @@
 
       const interval = setInterval(() => {
         if (progress >= maxBeforeReady) return;
-        progress += 5 + Math.random() * 8; // step size
+        progress += 5 + Math.random() * 8;
         if (progress > maxBeforeReady) progress = maxBeforeReady;
+
         bar.style.width = progress + "%";
         text.textContent = `Loading modules… ${Math.round(progress)}%`;
       }, 350);
 
-      // Flutter web dispatches this when the first frame is rendered
       window.addEventListener("flutter-first-frame", () => {
         clearInterval(interval);
+
         progress = 100;
         bar.style.width = "100%";
         text.textContent = "Almost done… 100%";
 
-        // Small delay so user sees 100%, then hide loader
         setTimeout(() => {
-          if (loader) loader.classList.add("hidden");
+          loader.classList.add("hidden");
         }, 300);
       });
     })();
   </script>
+
 </body>
 </html>
