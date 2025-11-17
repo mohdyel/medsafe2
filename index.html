@@ -1,38 +1,181 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
+  <base href="/" />
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+  <meta name="description" content="Medsafe secure portal" />
 
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="medsafe" />
+  <link rel="apple-touch-icon" href="icons/Icon-192.png" />
 
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="/">
-
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
-
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="medsafe">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="manifest" href="manifest.json" />
 
   <title>medsafe</title>
-  <link rel="manifest" href="manifest.json">
+
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: #050816;
+      color: #e5e7eb;
+    }
+    .loader-wrapper {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #050816;
+      z-index: 9999;
+    }
+    .loader-card {
+      max-width: 420px;
+      width: 100%;
+      padding: 32px 24px;
+      border-radius: 16px;
+      background: radial-gradient(circle at top, #1e293b, #020617);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+      text-align: center;
+    }
+    .loader-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(34, 197, 94, 0.08);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      margin-bottom: 18px;
+    }
+    .loader-icon::before {
+      content: "🛡️";
+      font-size: 26px;
+    }
+    .loader-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .loader-subtitle {
+      font-size: 14px;
+      color: #9ca3af;
+    }
+    .progress-shell {
+      margin-top: 24px;
+      width: 100%;
+    }
+    .progress-bg {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(45, 212, 191, 0.16);
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #14b8a6, #22c55e);
+      transition: width 0.35s ease-out;
+    }
+    .progress-text {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #cbd5f5;
+    }
+    .loader-secure {
+      margin-top: 18px;
+      font-size: 11px;
+      color: #9ca3af;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .loader-secure-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 8px #22c55e;
+    }
+
+    .hidden {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease-out;
+    }
+  </style>
 </head>
 <body>
+  <!-- Initial loading screen -->
+  <div id="initial-loader" class="loader-wrapper">
+    <div class="loader-card">
+      <div class="loader-icon"></div>
+      <div class="loader-title">Preparing Your Secure Session</div>
+      <div class="loader-subtitle">
+        Thank you for your patience. We're getting things ready for you.
+      </div>
+
+      <div class="progress-shell">
+        <div class="progress-bg">
+          <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        <div id="progress-text" class="progress-text">
+          Loading modules… 0%
+        </div>
+      </div>
+
+      <div class="loader-secure">
+        <span class="loader-secure-dot"></span>
+        <span>Secured by 256-bit SSL encryption</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flutter bootstrap (loads your WASM app) -->
   <script src="flutter_bootstrap.js" async></script>
+
+  <script>
+    // Fake progress while Flutter/WASM is loading
+    (function () {
+      const bar = document.getElementById("progress-bar");
+      const text = document.getElementById("progress-text");
+      const loader = document.getElementById("initial-loader");
+
+      let progress = 0;
+      const maxBeforeReady = 90;
+
+      const interval = setInterval(() => {
+        if (progress >= maxBeforeReady) return;
+        progress += 5 + Math.random() * 8; // step size
+        if (progress > maxBeforeReady) progress = maxBeforeReady;
+        bar.style.width = progress + "%";
+        text.textContent = `Loading modules… ${Math.round(progress)}%`;
+      }, 350);
+
+      // Flutter web dispatches this when the first frame is rendered
+      window.addEventListener("flutter-first-frame", () => {
+        clearInterval(interval);
+        progress = 100;
+        bar.style.width = "100%";
+        text.textContent = "Almost done… 100%";
+
+        // Small delay so user sees 100%, then hide loader
+        setTimeout(() => {
+          if (loader) loader.classList.add("hidden");
+        }, 300);
+      });
+    })();
+  </script>
 </body>
 </html>
